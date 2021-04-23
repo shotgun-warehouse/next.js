@@ -405,18 +405,27 @@ export function getUtils({
       }
     }
 
+    // @ts-ignore
+    const localeDetectPaths = i18n.localeDetectionPaths as string[]
     const denormalizedPagePath = denormalizePagePath(pathname)
-    const detectedDefaultLocale =
-      !detectedLocale ||
-      detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
+    const denormalizedPagePathWithoutQuery = denormalizedPagePath
+      .split('?')
+      .shift()
+      ?.split('#')
+      .shift() as string
+    // const detectedDefaultLocale =
+    //   !detectedLocale ||
+    //   detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
     const shouldStripDefaultLocale = false
     // detectedDefaultLocale &&
     // denormalizedPagePath.toLowerCase() === \`/\${i18n.defaultLocale.toLowerCase()}\`
 
-    const shouldAddLocalePrefix =
-      !detectedDefaultLocale && denormalizedPagePath === '/'
+    const matchUrl = localeDetectPaths.some((path) =>
+      new RegExp(path).test(denormalizedPagePathWithoutQuery)
+    )
+    const shouldAddLocalePrefix = matchUrl
 
-    detectedLocale = detectedLocale || i18n.defaultLocale
+    detectedLocale = detectedLocale || 'en'
 
     if (
       !shouldNotRedirect &&
@@ -453,8 +462,8 @@ export function getUtils({
           pathname: localeDomainRedirect
             ? localeDomainRedirect
             : shouldStripDefaultLocale
-            ? basePath || '/'
-            : `${basePath}/${detectedLocale}`,
+            ? basePath || `/`
+            : `${basePath || ''}/${detectedLocale}${denormalizedPagePath}`,
         })
       )
       res.statusCode = TEMPORARY_REDIRECT_STATUS

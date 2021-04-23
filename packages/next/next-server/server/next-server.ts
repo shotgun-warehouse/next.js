@@ -498,19 +498,28 @@ export default class Server {
         }
       }
 
-      const denormalizedPagePath = denormalizePagePath(pathname || '/')
-      const detectedDefaultLocale =
-        !detectedLocale ||
-        detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
+      // @ts-ignore
+      const localeDetectPaths = i18n.localeDetectionPaths as string[]
+      const denormalizedPagePath = denormalizePagePath(pathname)
+      const denormalizedPagePathWithoutQuery = denormalizedPagePath
+        .split('?')
+        .shift()
+        ?.split('#')
+        .shift() as string
+      // const detectedDefaultLocale =
+      //   !detectedLocale ||
+      //   detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
       const shouldStripDefaultLocale = false
       // detectedDefaultLocale &&
       // denormalizedPagePath.toLowerCase() ===
       //   `/${i18n.defaultLocale.toLowerCase()}`
 
-      const shouldAddLocalePrefix =
-        !detectedDefaultLocale && denormalizedPagePath === '/'
+      const matchUrl = localeDetectPaths.some((path) =>
+        new RegExp(path).test(denormalizedPagePathWithoutQuery)
+      )
+      const shouldAddLocalePrefix = matchUrl
 
-      detectedLocale = detectedLocale || i18n.defaultLocale
+      detectedLocale = detectedLocale || 'en'
 
       if (
         i18n.localeDetection !== false &&
@@ -549,7 +558,9 @@ export default class Server {
                 ...parsed,
                 pathname: shouldStripDefaultLocale
                   ? basePath || `/`
-                  : `${basePath || ''}/${detectedLocale}`,
+                  : `${
+                      basePath || ''
+                    }/${detectedLocale}${denormalizedPagePath}`,
               })
         )
         res.statusCode = TEMPORARY_REDIRECT_STATUS
