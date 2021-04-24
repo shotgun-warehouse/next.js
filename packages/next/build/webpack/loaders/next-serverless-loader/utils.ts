@@ -413,9 +413,9 @@ export function getUtils({
       .shift()
       ?.split('#')
       .shift() as string
-    // const detectedDefaultLocale =
-    //   !detectedLocale ||
-    //   detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
+    const detectedDefaultLocale =
+      !detectedLocale ||
+      detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
     const shouldStripDefaultLocale = false
     // detectedDefaultLocale &&
     // denormalizedPagePath.toLowerCase() === \`/\${i18n.defaultLocale.toLowerCase()}\`
@@ -423,9 +423,9 @@ export function getUtils({
     const matchUrl = localeDetectPaths.some((path) =>
       new RegExp(path).test(denormalizedPagePathWithoutQuery)
     )
-    const shouldAddLocalePrefix = matchUrl
+    const shouldAddLocalePrefix = !detectedDefaultLocale && matchUrl
 
-    detectedLocale = detectedLocale || 'en'
+    detectedLocale = detectedLocale || i18n.defaultLocale
 
     if (
       !shouldNotRedirect &&

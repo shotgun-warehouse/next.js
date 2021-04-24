@@ -506,9 +506,9 @@ export default class Server {
         .shift()
         ?.split('#')
         .shift() as string
-      // const detectedDefaultLocale =
-      //   !detectedLocale ||
-      //   detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
+      const detectedDefaultLocale =
+        !detectedLocale ||
+        detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
       const shouldStripDefaultLocale = false
       // detectedDefaultLocale &&
       // denormalizedPagePath.toLowerCase() ===
@@ -517,9 +517,9 @@ export default class Server {
       const matchUrl = localeDetectPaths.some((path) =>
         new RegExp(path).test(denormalizedPagePathWithoutQuery)
       )
-      const shouldAddLocalePrefix = matchUrl
+      const shouldAddLocalePrefix = !detectedDefaultLocale && matchUrl
 
-      detectedLocale = detectedLocale || 'en'
+      detectedLocale = detectedLocale || i18n.defaultLocale
 
       if (
         i18n.localeDetection !== false &&
