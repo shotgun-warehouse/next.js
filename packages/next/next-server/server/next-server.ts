@@ -488,7 +488,14 @@ export default class Server {
         }
       }
 
-      const denormalizedPagePath = denormalizePagePath(pathname || '/')
+      // @ts-ignore
+      const localeDetectPaths = i18n.localeDetectionPaths as string[]
+      const denormalizedPagePath = denormalizePagePath(pathname)
+      const denormalizedPagePathWithoutQuery = denormalizedPagePath
+        .split('?')
+        .shift()
+        ?.split('#')
+        .shift() as string
       const detectedDefaultLocale =
         !detectedLocale ||
         detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
@@ -497,8 +504,10 @@ export default class Server {
       // denormalizedPagePath.toLowerCase() ===
       //   `/${i18n.defaultLocale.toLowerCase()}`
 
-      const shouldAddLocalePrefix =
-        !detectedDefaultLocale && denormalizedPagePath === '/'
+      const matchUrl = localeDetectPaths.some((path) =>
+        new RegExp(path).test(denormalizedPagePathWithoutQuery)
+      )
+      const shouldAddLocalePrefix = !detectedDefaultLocale && matchUrl
 
       detectedLocale = detectedLocale || i18n.defaultLocale
 
@@ -539,7 +548,9 @@ export default class Server {
                 ...parsed,
                 pathname: shouldStripDefaultLocale
                   ? basePath || `/`
-                  : `${basePath || ''}/${detectedLocale}`,
+                  : `${
+                      basePath || ''
+                    }/${detectedLocale}${denormalizedPagePath}`,
               })
         )
         res.statusCode = TEMPORARY_REDIRECT_STATUS

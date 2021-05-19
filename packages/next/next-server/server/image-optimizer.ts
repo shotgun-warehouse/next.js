@@ -160,7 +160,10 @@ export async function imageOptimizer(
         const contentType = getContentType(extension)
         const fsPath = join(hashDir, file)
         if (now < expireAt) {
-          res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate')
+          res.setHeader(
+            'Cache-Control',
+            'public, max-age=86400000, s-maxage=86400000, stale-while-revalidate=86400000, immutable'
+          )
           if (sendEtagResponse(req, res, etag)) {
             return { finished: true }
           }
@@ -369,7 +372,10 @@ function sendResponse(
   buffer: Buffer
 ) {
   const etag = getHash([buffer])
-  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate')
+  res.setHeader(
+    'Cache-Control',
+    'public, max-age=86400000, s-maxage=86400000, stale-while-revalidate=86400000, immutable'
+  )
   if (sendEtagResponse(req, res, etag)) {
     return
   }
@@ -413,7 +419,7 @@ function parseCacheControl(str: string | null): Map<string, string> {
 }
 
 export function getMaxAge(str: string | null): number {
-  const minimum = 60
+  const minimum = 86400000
   const map = parseCacheControl(str)
   if (map) {
     let age = map.get('s-maxage') || map.get('max-age') || ''

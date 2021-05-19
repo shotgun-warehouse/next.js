@@ -401,7 +401,14 @@ export function getUtils({
       }
     }
 
+    // @ts-ignore
+    const localeDetectPaths = i18n.localeDetectionPaths as string[]
     const denormalizedPagePath = denormalizePagePath(pathname)
+    const denormalizedPagePathWithoutQuery = denormalizedPagePath
+      .split('?')
+      .shift()
+      ?.split('#')
+      .shift() as string
     const detectedDefaultLocale =
       !detectedLocale ||
       detectedLocale.toLowerCase() === defaultLocale.toLowerCase()
@@ -409,8 +416,10 @@ export function getUtils({
     // detectedDefaultLocale &&
     // denormalizedPagePath.toLowerCase() === \`/\${i18n.defaultLocale.toLowerCase()}\`
 
-    const shouldAddLocalePrefix =
-      !detectedDefaultLocale && denormalizedPagePath === '/'
+    const matchUrl = localeDetectPaths.some((path) =>
+      new RegExp(path).test(denormalizedPagePathWithoutQuery)
+    )
+    const shouldAddLocalePrefix = !detectedDefaultLocale && matchUrl
 
     detectedLocale = detectedLocale || i18n.defaultLocale
 
@@ -449,8 +458,8 @@ export function getUtils({
           pathname: localeDomainRedirect
             ? localeDomainRedirect
             : shouldStripDefaultLocale
-            ? basePath || '/'
-            : `${basePath}/${detectedLocale}`,
+            ? basePath || `/`
+            : `${basePath || ''}/${detectedLocale}${denormalizedPagePath}`,
         })
       )
       res.statusCode = TEMPORARY_REDIRECT_STATUS
